@@ -21,31 +21,28 @@ var SET_MAX=[
   [0,0],
   [1,1]
 ];
-var SWAP01=[
-  [0,1],
-  [1,0]
+var SWAP=[
+  [1,0,0,0],
+  [0,0,1,0],
+  [0,1,0,0],
+  [0,0,0,1]
 ];
 
-var bitwiseNot=tensorProduct(ID,tensorProduct(ID,ID));
 
-console.log(bitwiseNot);
+var input=[1,0];
 
-var input=[0,0,0,0,0,0,0,0];
-
-var operation=bitwiseNot;
+var operation=tensorProduct(ID,NOT);
 
 var output=decodeBits(compose(operation,encodeBits(input,operation.length)));
 
 console.log(input);
-
-console.log(encodeBits(input,operation.length));
-console.log(matrixMultiplication(operation,encodeBits(input,operation.length)));
 
 console.log(output);
 
 //console.log(decode(matrixMultiplication(bigSet1,encode(0,16))));
 
 /*
+var bitwiseNot=tensorProduct(ID,tensorProduct(ID,NOT));
 console.log(compose(NOT,SET_MIN));
 console.log(tensorProduct(NOT,NOT));
 
@@ -125,29 +122,30 @@ function outerProduct(m1,m2){
 }
 
 function encodeBits(arr,size){
+  var narr=arr.slice().reverse();
+  return encodeNum(bitsToNum(narr),size);
+}
+
+function decodeBits(num){
+  var exp=Math.log(num.length)/Math.log(2);
+  var temp=decodeNum(num);
   var out=[];
-  for(var i=0;i<size;i++){
-    if(arr[i]&&arr[i]==1){
-      out.push([0])
-      out.push([1])
-    }else{
-      out.push([1])
-      out.push([0]);
-    }
+  while(temp>0){
+    out.unshift(temp%2);
+    temp=Math.floor(temp/2);
+  }
+  while(out.length<exp){
+    out.unshift(0);
   }
   return out;
 }
 
-function decodeBits(num){
-  var out=[];
-  for(var i=0;i<num.length;i+=2){
-    if(num[i][0]==1){
-      out.push(0);
-    }else{
-      out.push(1);
-    }
+function bitsToNum(arr){
+  var num=0;
+  for(var i=0;i<arr.length;i++){
+    num+=arr[i]*Math.pow(2,i)
   }
-  return out;
+  return num;
 }
 
 function encodeNum(num,size){
