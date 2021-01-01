@@ -22,13 +22,12 @@ function QuantumCircuit(circuit){
 
 function run(input){
   var operation=circuit;
-  if(Number(input)){
+  if(input===0||Number(input)){
     var enc=("000000000000000000000000000000"+(input).toString(2))
     enc=enc.substring(enc.length-operation.length/2)
-    enc=enc.split("").map(x=>Number(x)).reverse();
-    console.log(enc,encodeBits(enc,operation.length));
-
-    return bitsToNum(compose(operation,encodeBits(enc,operation.length)))
+    enc=enc.split("").map(x=>Number(x));
+    var res=decodeBits(compose(operation,encodeBits(enc,operation.length)))
+    return bitsToNum(res);
   }else{
     return decodeBits(compose(operation,encodeBits(input,operation.length)))
   }
@@ -293,6 +292,30 @@ var CNOT=[
   [0,0,1,0]
 ];
 
+function combineArr(arr){
+  var out;
+  for(var i=0;i<arr.length;i++){
+    if(out==null){
+      out=arr[0];
+    }else{
+      out=tensorProduct(out,arr[i]);
+    }
+  }
+  return out;
+}
+
+function composeArr(arr){
+  arr=arr.map(x=>combineArr(x));
+  var out;
+  for(var i=0;i<arr.length;i++){
+    if(out==null){
+      out=arr[0];
+    }else{
+      out=compose(out,arr[i]);
+    }
+  }
+  return out;
+}
 
 
 
@@ -302,7 +325,13 @@ function create(arr){
 }
 
 module.exports={
-  create:create,
+  create:function(arr){
+    if(arr[0][0][0]!=null){//Needs composition
+      return create(composeArr(arr));
+    }else{//Fully composed
+      return create(arr);
+    }
+  },
   combine:tensorProduct,
   compose:compose,
   ID:ID,

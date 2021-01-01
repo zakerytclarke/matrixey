@@ -6,27 +6,25 @@ Allows for sampling of distributions of a given circuit in addition to single ru
 ## Examples
 ### Random Dice Roll
 ```
-var circuit=createCircuit([
-  [HADAMARD,HADAMARD,HADAMARD];//Layer 1
+var QCS = require("./quantum.js");
+
+var random8 = QCS.create([
+    [QCS.HADAMARD,QCS.HADAMARD,QCS.HADAMARD]
 ]);
 
-var input=0;//3 input bits set to 0
-
-var output=run(input,circuit);
-
-console.log(output);//Output will be three random bits converted to integer 0-6
+var result=random8.run(0);
+console.log(result);//0-8
 ```
 
 ### Entangled Bell State
 ```
-var circuit=createCircuit([
-  [HADAMARD,ID];//Layer 1
-  [CNOT];//Layer 2
+var QCS = require("./quantum.js");
+
+var bellState = QCS.create([
+    [QCS.HADAMARD,QCS.ID],//Layer 1
+    [QCS.CNOT]//Layer 2
 ]);
 
-var input=[0,0];//
-
-var output=run(input,circuit);
-
-console.log(output);//Output will be either |00> or |11> (entaglement) 
+var res=bellState.sample([0,0]);
+console.log(res);//Output will be either |00> or |11> (entaglement). 
 ```

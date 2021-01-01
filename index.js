@@ -1,8 +1,9 @@
 var QCS = require("./quantum.js");
 
-var random8 = QCS.create(
-    QCS.combine(QCS.NOT,QCS.ID)
-);
+var bellState = QCS.create([
+    [QCS.HADAMARD,QCS.ID],//Layer 1
+    [QCS.CNOT]//Layer 2
+]);
 
-var test=random8.run([0,0]);
-console.log(test);
+var res=bellState.sample([0,0]);
+console.log(res);//Output will be either |00> or |11> (entaglement).
