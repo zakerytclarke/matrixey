@@ -3,7 +3,6 @@ var maxNum=40000000;
 var memory=[];
 
 
-
 //Operation Matrix for single bit
 var ID=[
   [1,0],
@@ -21,6 +20,11 @@ var SET_MAX=[
   [0,0],
   [1,1]
 ];
+var HADAMARD=[
+  [1/Math.sqrt(2),1/Math.sqrt(2)],
+  [1/Math.sqrt(2),-1/Math.sqrt(2)]
+];
+
 var SWAP=[
   [1,0,0,0],
   [0,0,1,0],
@@ -29,15 +33,21 @@ var SWAP=[
 ];
 
 
-var input=[1,0];
+var input=[0];
 
-var operation=tensorProduct(ID,NOT);
+var operation=HADAMARD;
 
-var output=decodeBits(compose(operation,encodeBits(input,operation.length)));
+
+
+var output=sample(input,operation);
 
 console.log(input);
 
+console.log(operation);
+
 console.log(output);
+
+
 
 //console.log(decode(matrixMultiplication(bigSet1,encode(0,16))));
 
@@ -54,6 +64,53 @@ console.log(matrixMultiplication(NOT,NOT));
 
 
 
+
+/**
+ * Runs a given quantum ciruit to produce an output
+ * @param {*} input 
+ * @param {*} ops 
+ * @param {*} output 
+ */
+
+function run(input,operation){
+  return decodeBits(compose(operation,encodeBits(input,operation.length)))
+}
+
+/**
+ * Runs a given quantum circuit to produce sample distribution
+ * @param {*} input 
+ * @param {*} ops 
+ * @param {*} output 
+ * @param {*} n 
+ */
+function sample(input,operation,n){
+  if(n==null){
+    n=10000;
+  }
+  var out;
+  var num=0;
+  for(var i=0;i<n;i++){
+    var temp=run(input,operation);
+    if(temp==1){
+      num++;
+    }   
+    if(out==null){
+      out=temp;
+    }else{
+      for(var j=0;j<out.length;j++){
+        out[j]+=temp[j];
+      }
+    }
+  }
+  return out.map(x=>x/n);
+}
+
+/**
+ * COMPOSE
+ * Sequence of operations
+ * @param {*} f1 
+ * @param {*} f2 
+ */
 function compose(f1,f2){
   return matrixMultiplication(f1,f2);
 }
@@ -126,10 +183,15 @@ function encodeBits(arr,size){
   return encodeNum(bitsToNum(narr),size);
 }
 
+/**
+ * Read quantum bits 
+ * @param {*} num 
+ */
 function decodeBits(num){
   var exp=Math.log(num.length)/Math.log(2);
   var temp=decodeNum(num);
   var out=[];
+  
   while(temp>0){
     out.unshift(temp%2);
     temp=Math.floor(temp/2);
@@ -161,7 +223,16 @@ function encodeNum(num,size){
 }
 
 function decodeNum(num){
+  console.log(num);
   for(var i=0;i<num.length;i++){
+    //Calculate Probability Distribution and Evalaute to 0/1
+    var rand=Math.random();
+    var positiveDist=Math.pow(num[i][0],2);
+    if(rand<positiveDist){
+      num[i][0]=1;
+    }else{
+      num[i][0]=0;
+    }
     if(num[i][0]==1){
       return i;
     }
@@ -190,6 +261,11 @@ function decode(num){
 */
 
 
+/**
+ * Maps two function to higher dimension
+ * @param {*} a 
+ * @param {*} b 
+ */
 //https://rosettacode.org/wiki/Kronecker_product#JavaScript
 function tensorProduct(a,b) {
   var m=a.length, n=a[0].length, p=b.length, q=b[0].length;
